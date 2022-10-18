@@ -1,0 +1,33 @@
+<resources>
+    <string name="app_name">PaymentApp</string>
+    <string name="enter_amount">" Ingrese el monto"</string>
+    <string name="backIcon">Icono de retroceso</string>
+    <string name="nextIcon">Icono de avanzar</string>
+    <string name="amount">Monto</string>
+    <string name="error_message">Mensaje de error</string>
+    <string name="payment_method">"Medio de pago"</string>
+    <string name="no_selected_payment_method">"Debe seleccionar un medio de pago"</string>
+    <string name="no_selected_card_issuer">"Debe seleccionar un banco"</string>
+    <string name="select_card_issuer">"Seleccione un banco"</string>
+    <string name="select_payment_method">"Seleccione el medio de pago"</string>
+    <string name="payments">"Pagos"</string>
+    <string name="search">Buscar...</string>
+    <string name="search_icon">Icono de búsqueda</string>
+    <string name="close_icon">Icono de cerrar</string>
+    <string name="payment_method_image">Imagen del método de pago</string>
+    <string name="no_results">Sin resultados</string>
+    <string name="no_payment">Aún no hay pagos registrados</string>
+    <string name="add_payment_icon">Icono adicionar pago</string>
+    <string name="invalid_amount">Monto no válido</string>
+    <string name="unexpectedError">"¡Lo sentimos! Ha ocurrido un error inesperado, Por favor intente nuevamente."</string>
+    <string name="no_internet_connection">Por favor, compruebe su conexión de red</string>
+    <string name="button_image">Imagen del botón</string>
+    <string name="card_issuer">Bancos</string>
+    <string name="available_card_issuer">Bancos disponibles para este medio de pago</string>
+    <string name="no_payment_method_found">"No se encontró resultados para ese medio de pago"</string>
+    <string name="finalize_payment">Complete el pago</string>
+    <string name="bottom_bar_icon">Imagen del botón de la barra inferior</string>
+    <string name="amount_to_pay">Monto a pagar:  %s</string>
+    <string name="select_installments">Seleccione la cuota deseada</string>
+    <string name="security_code">Código de seguridad</string>
+</resources>
