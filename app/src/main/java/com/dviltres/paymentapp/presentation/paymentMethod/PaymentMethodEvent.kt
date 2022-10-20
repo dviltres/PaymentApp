@@ -12,4 +12,7 @@ sealed class PaymentMethodEvent {
     object OnTriggerNextPage:PaymentMethodEvent()
     data class OnSelectPaymentMethod(val paymentMethod: PaymentMethod): PaymentMethodEvent()
     data class OnShowErrorMessage(val error: String): PaymentMethodEvent()
+    data class OnUpdateScrollPosition(val newScrollIndex: Int): PaymentMethodEvent()
+    data class OnSearchClicked(val query: String): PaymentMethodEvent()
+
 }

@@ -11,11 +11,13 @@ import com.dviltres.paymentapp.domain.useCase.cardIssuer.GetCardIssuers
 import com.dviltres.paymentapp.domain.useCase.installment.GetInstallment
 import com.dviltres.paymentapp.domain.useCase.installment.InstallmentUseCases
 import com.dviltres.paymentapp.domain.useCase.payment.GetPayments
+import com.dviltres.paymentapp.domain.useCase.payment.PaymentConfirm
 import com.dviltres.paymentapp.domain.useCase.payment.PaymentUseCases
 import com.dviltres.paymentapp.domain.useCase.paymentMethod.GetPaymentMethodById
 import com.dviltres.paymentapp.domain.useCase.paymentMethod.GetPaymentMethods
 import com.dviltres.paymentapp.domain.useCase.paymentMethod.PaymentMethodUseCases
 import com.dviltres.paymentapp.domain.useCase.util.FilterOutDigits
+import com.dviltres.paymentapp.domain.useCase.util.InputValidator
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -25,17 +27,14 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object UsesCasesModule {
-    @Provides
-    @Singleton
-    fun provideFilterOutDigitsUseCase(): FilterOutDigits {
-        return FilterOutDigits()
-    }
+
     /* ---------------------PaymentUseCases---------------------------------*/
     @Provides
     @Singleton
     fun providePaymentUseCases(repository:PaymentRepository, application: Application): PaymentUseCases {
         return PaymentUseCases(
-            getPayments = GetPayments(repository = repository, application = application)
+            getPayments = GetPayments(repository = repository, application = application),
+            paymentConfirm = PaymentConfirm(repository = repository, application = application)
         )
     }
 

@@ -4,13 +4,14 @@
     <string name="backIcon">Icono de retroceso</string>
     <string name="nextIcon">Icono de avanzar</string>
     <string name="amount">Monto</string>
+    <string name="amount_header">Monto:</string>
     <string name="error_message">Mensaje de error</string>
     <string name="payment_method">"Medio de pago"</string>
     <string name="no_selected_payment_method">"Debe seleccionar un medio de pago"</string>
     <string name="no_selected_card_issuer">"Debe seleccionar un banco"</string>
     <string name="select_card_issuer">"Seleccione un banco"</string>
     <string name="select_payment_method">"Seleccione el medio de pago"</string>
-    <string name="payments">"Pagos"</string>
+    <string name="payment">"Pago"</string>
     <string name="search">Buscar...</string>
     <string name="search_icon">Icono de búsqueda</string>
     <string name="close_icon">Icono de cerrar</string>
@@ -30,4 +31,15 @@
     <string name="amount_to_pay">Monto a pagar:  %s</string>
     <string name="select_installments">Seleccione la cuota deseada</string>
     <string name="security_code">Código de seguridad</string>
+    <string name="installments">Pago en cuotas</string>
+    <string name="number_card">Número de tarjeta</string>
+    <string name="holder_name">Nombre del titular</string>
+    <string name="expiration">Vencimiento</string>
+    <string name="cvc">CVC</string>
+    <string name="your_name">NOMBRE</string>
+    <string name="exp">EXP</string>
+    <string name="error_input_data">Existe uno o mas errores en los datos del pago, Por favor intente nuevamente.</string>
+    <string name="success_payment">El pago fue completado satisfactoriamente.</string>
+    <string name="wrong_amount">Monto no válido</string>
+    <string name="no_exist_installment">"No se encontró resultados para la opción seleccionada"</string>
 </resources>

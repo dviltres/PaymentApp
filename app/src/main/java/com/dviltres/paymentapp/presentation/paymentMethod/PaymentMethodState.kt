@@ -13,4 +13,6 @@ data class PaymentMethodState(
     val isRefreshing: Boolean = false,
     val searchState: SearchState = SearchState.CLOSED,
     val selectedPaymentMethod: PaymentMethod? = null,
+    val listScrollPosition:Int = 0,
+    val lastScrollIndex:Int = 0
 )

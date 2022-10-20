@@ -16,10 +16,10 @@ class GetPayments @Inject constructor(
     private val repository: PaymentRepository,
     private val application: Application,
 ) {
-    operator fun invoke(query:String): Flow<Resource<List<Payment>>> = flow {
+    operator fun invoke(): Flow<Resource<List<Payment>>> = flow {
         try {
             emit(Resource.Loading())
-            emit(Resource.Success(repository.getPayments(query)))
+            emit(Resource.Success(repository.getPayments()))
         } catch(e: HttpException) {
             emit(Resource.Error(message = UiText.StringResource(R.string.unexpectedError).asString(application)))
         } catch(e: IOException) {

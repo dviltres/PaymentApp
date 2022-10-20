@@ -59,6 +59,7 @@ fun CustomTextField(
     keyboardType: KeyboardType = KeyboardType.Text,
     nextFocus: FocusRequester? = null,
     label: String,
+    readOnly: Boolean = false,
     trailingIcon: @Composable (() -> Unit)? = null
 ) {
     val keyboardOptions = KeyboardOptions(
@@ -71,6 +72,7 @@ fun CustomTextField(
         onValueChange = { onValueChange(it) },
         visualTransformation = visualTransformation,
         modifier = modifier,
+        readOnly = readOnly,
         label = { Text(text = label) },
         trailingIcon = trailingIcon,
         keyboardOptions = keyboardOptions,

@@ -3,7 +3,6 @@ plugins {
     id 'org.jetbrains.kotlin.android'
     id 'kotlin-kapt'
     id 'dagger.hilt.android.plugin'
-    id 'com.google.android.libraries.mapsplatform.secrets-gradle-plugin'
 }
 
 android {
@@ -60,7 +59,8 @@ dependencies {
     implementation 'androidx.compose.material:material:1.2.1'
     implementation "androidx.compose.material:material-icons-core:$compose_ui_version"
     implementation "androidx.compose.material:material-icons-extended:$compose_ui_version"
-    implementation "androidx.constraintlayout:constraintlayout-compose:1.0.0-alpha07"
+    implementation "androidx.constraintlayout:constraintlayout-compose:1.1.0-alpha04"
+
 
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.3'
@@ -93,14 +93,9 @@ dependencies {
     implementation "com.squareup.okhttp3:logging-interceptor:5.0.0-alpha.3"
     //Swiperefresh
     implementation "com.google.accompanist:accompanist-swiperefresh:0.20.2"
-    // Import the BoM for the Firebase platform
-    implementation platform('com.google.firebase:firebase-bom:30.3.1')
-    // Declare the dependencies for the Crashlytics and Analytics libraries
-    // When using the BoM, you don't specify versions in Firebase library dependencies
-    implementation 'com.google.firebase:firebase-crashlytics-ktx'
-    implementation 'com.google.firebase:firebase-analytics-ktx'
-
     //Icon and Image
     implementation("io.coil-kt:coil:2.2.2")
     implementation("io.coil-kt:coil-compose:2.2.2")
+    // Splashscreen
+    implementation 'androidx.core:core-splashscreen:1.0.0-alpha02'
 }

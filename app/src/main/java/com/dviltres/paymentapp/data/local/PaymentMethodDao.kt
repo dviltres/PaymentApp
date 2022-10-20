@@ -11,8 +11,12 @@ interface PaymentMethodDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertPaymentMethod(paymentMethodEntity: PaymentMethodEntity)
 
-    @Query("SELECT * FROM PaymentMethodEntity")
-    suspend fun getPaymentMethods(): List<PaymentMethodEntity>
+    @Query("""
+        SELECT * FROM PaymentMethodEntity 
+        WHERE name LIKE '%' || :query || '%'
+        LIMIT :pageSize OFFSET ((:page - 1) * :pageSize)
+        """)
+    suspend fun getPaymentMethods(query:String, page:Int, pageSize:Int): List<PaymentMethodEntity>
 
     @Query("SELECT * FROM PaymentMethodEntity Where id=:paymentId")
     suspend fun getPaymentMethodById(paymentId:String): PaymentMethodEntity?

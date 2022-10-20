@@ -39,20 +39,20 @@ object RepositoryModule {
     /* ---------------------PaymentMethodRepository---------------------------------*/
     @Provides
     @Singleton
-    fun providePaymentMethodRepository( dao: PaymentMethodDao, api: PaymentMarketApi): PaymentMethodRepository {
-        return PaymentMethodRepositoryImpl(dao = dao, api = api)
+    fun providePaymentMethodRepository( dao: PaymentMethodDao, api: PaymentMarketApi, @ApiKey apiKey: String): PaymentMethodRepository {
+        return PaymentMethodRepositoryImpl(dao = dao, api = api, apiKey = apiKey)
     }
     /* ---------------------InstallmentRepository---------------------------------*/
     @Provides
     @Singleton
-    fun provideInstallmentRepository(dao: InstallmentDao, api: PaymentMarketApi): InstallmentRepository {
-        return InstallmentRepositoryImpl(dao = dao, api = api)
+    fun provideInstallmentRepository(dao: InstallmentDao, api: PaymentMarketApi, @ApiKey apiKey: String): InstallmentRepository {
+        return InstallmentRepositoryImpl(dao = dao, api = api, apiKey = apiKey)
     }
 
     /* ---------------------CardIssuerRepository---------------------------------*/
     @Provides
     @Singleton
-    fun provideCardIssuerRepository(dao: CardIssuerDao, api: PaymentMarketApi): CardIssuerRepository {
-        return CardIssuerRepositoryImpl(dao = dao, api = api)
+    fun provideCardIssuerRepository(dao: CardIssuerDao, api: PaymentMarketApi, @ApiKey apiKey: String): CardIssuerRepository {
+        return CardIssuerRepositoryImpl(dao = dao, api = api, apiKey = apiKey)
     }
 }

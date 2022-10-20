@@ -21,7 +21,7 @@ interface PaymentMarketApi {
     @GET("/v1/payment_methods/installments")
     suspend fun getInstallments(
         @Query("public_key") publicKey: String,
-        @Query("amount") amount: Int,
+        @Query("amount") amount: Double,
         @Query("payment_method_id") paymentMethodId: String,
         @Query("issuer.id")  issuerId: String,
     ): Response<GetInstallmentsDto>

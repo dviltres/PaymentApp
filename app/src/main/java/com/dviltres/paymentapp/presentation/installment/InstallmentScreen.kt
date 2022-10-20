@@ -1,48 +1,37 @@
 package com.dviltres.paymentapp.presentation.installment
 
-import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.rememberScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.dviltres.paymentapp.R
-import com.dviltres.paymentapp.presentation.components.*
-import com.dviltres.paymentapp.presentation.installment.components.HeaderInfo
-import com.dviltres.paymentapp.presentation.installment.components.InstallmentItem
-import com.dviltres.paymentapp.presentation.payment.PaymentEvent
+import com.dviltres.paymentapp.presentation.components.CreditCard
+import com.dviltres.paymentapp.presentation.components.CreditCardForm
+import com.dviltres.paymentapp.presentation.components.DefaultAppBar
+import com.dviltres.paymentapp.presentation.components.RoundedButton
 import com.dviltres.paymentapp.presentation.theme.LocalSpacing
 import com.dviltres.paymentapp.presentation.util.navigation.Screen
 import com.dviltres.paymentapp.presentation.util.navigation.StandardScaffold
 import com.dviltres.paymentapp.presentation.util.uiEvent.UiEvent
 import com.dviltres.paymentapp.presentation.util.uiEvent.UiText
-import com.google.accompanist.swiperefresh.SwipeRefresh
-import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 
 @Composable
 fun InstallmentScreen(
     paymentMethodId:String,
-    amount:Int,
+    amount:String,
     issuerId:String,
     navController: NavController,
     viewModel: InstallmentViewModel = hiltViewModel()
@@ -51,16 +40,16 @@ fun InstallmentScreen(
     val state = viewModel.state
     val context = LocalContext.current
     val scaffoldState = rememberScaffoldState()
-
-    val swipeRefreshState = rememberSwipeRefreshState(
-        isRefreshing = viewModel.state.isRefreshing
-    )
+    val scrollState = rememberScrollState()
 
     LaunchedEffect(key1 = true) {
         viewModel.uiEvent.collect { event ->
             when (event) {
                 is UiEvent.Success -> {
-
+                    scaffoldState.snackbarHostState.showSnackbar(
+                        message = UiText.StringResource(R.string.success_payment).asString(context)
+                    )
+                    navController.navigate(Screen.PaymentScreen.route)
                 }
                 is UiEvent.ShowSnackbar -> {
                     scaffoldState.snackbarHostState.showSnackbar(
@@ -90,11 +79,14 @@ fun InstallmentScreen(
             },
             bottomBar = {
                    RoundedButton(
-                       text = stringResource(R.string.payment_method),
+                       text = if(state.selectedInstallment.isNullOrBlank())
+                           stringResource(R.string.finalize_payment)
+                       else
+                           state.selectedInstallment,
                        isEnabled = true,
                        displayProgressBar = state.isLoading,
                        onClick = {
-
+                          viewModel.onEvent(InstallmentEvent.OnPaymentConfirmClick)
                        },
                        modifier = Modifier
                            .fillMaxWidth()
@@ -102,152 +94,73 @@ fun InstallmentScreen(
                    )
             }
         ) {
-            SwipeRefresh(
-                state = swipeRefreshState,
-                onRefresh = {
-                    viewModel.onEvent(InstallmentEvent.OnRefresh)
-                },
-            ) {
-                Column(
-                    modifier = Modifier.padding(
-                        start = 16.dp,
-                        top = 16.dp,
-                        end = 16.dp
-                    )
-                ) {
-                    CreditCard(
-                        number = state.creditCard.number,
-                        expiration = state.creditCard.expiration,
-                        holderName = state.creditCard.holderName,
-                        cvc = state.creditCard.cvc,
-                        flipped = state.flipped,
-                        emptyChar = 'X',
-                        showSecurityCode = false
-                    )
-                    Spacer(modifier = Modifier.size(16.dp))
-                    CreditCardForm(
-                        flipped = state.flipped,
-                        creditCard = state.creditCard,
-                        onFocusChanged = {
-
-                        },
-                        onNumberValueChange = {
-
-                        },
-                        onNameValueChange = {
-
-                        },
-                        onExpirationValueChange = {
-
-                        },
-                        onCVCValueChange = {
-
-                        },
-                        onSetName = {
-
-                        },
-                        onSetNumber= {
-
-                        },
-                        onSetExpiration = {
-
-                        },
-                        onSetCVC= {
-
-                        }
-                    )
-                }
-                /*Column(modifier = Modifier.fillMaxSize()) {
-                    Column( modifier = Modifier
-                        .fillMaxWidth()
-                        .background(MaterialTheme.colors.primary)
-                        .padding(
-                            start = spacing.spaceLarge,
-                            top = spacing.spaceMedium,
-                            end = spacing.spaceLarge,
-                            bottom = spacing.spaceMedium,
-                        )
-                    ) {
-                        if(state.paymentMethod != null && state.cardIssuer != null){
-                            HeaderInfo(
-                                paymentMethod = state.paymentMethod,
-                                cardIssuer = state.cardIssuer
-                            )
-                        }
-                        Spacer(modifier = Modifier.height(spacing.spaceMedium))
-                        Row(
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ){
-                            Text(
-                                text = state.selectedInstallment,
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Bold,
-                                textAlign = TextAlign.Center,
-                                color = Color.White
-                            )
-                            OutlinedTextField(
-                                value = state.token,
-                                onValueChange = {
-                                    // viewModel.onEvent(PaymentEvent.OnPaymentChange(it))
-                                },
-                                label = { Text(text = stringResource(id = R.string.security_code)) },
-                                singleLine = true,
-                                keyboardOptions = KeyboardOptions(
-                                    keyboardType = KeyboardType.Text,
-                                    imeAction = ImeAction.Done
-                                ),
-                                keyboardActions = KeyboardActions(
-                                    onDone = {
-                                        *//*  focusManager.clearFocus()
-                                          keyboardController?.hide()*//*
-                                    }
-                                ),
-                                modifier = Modifier.size(40.dp)
-                            )
-                        }
-                        Text(
-                            text = stringResource(R.string.select_installments),
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.Bold,
-                            textAlign = TextAlign.Center,
-                            color = Color.White,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                        )
-                    }
-                    Spacer(modifier = Modifier.height(spacing.spaceSmall))
-                    LazyColumn(
-                        modifier = Modifier
-                            .background(MaterialTheme.colors.surface)
-                            .padding(bottom = 80.dp)
-                    ){
-                       items(state.recommendedMessage){ item->
-                           InstallmentItem(
-                               text = item,
-                               onSelectedClick = {
-                                   viewModel.onEvent(InstallmentEvent.OnSelectInstallment(item))
-                               }
-                           )
-                       }
-                    }
-                }*/
-
-            }
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                when {
-                    state.isLoading -> CircularProgressIndicator()
-                    state.recommendedMessage.isEmpty() -> {
-                        Text(
-                            text = stringResource(R.string.no_results),
-                            style = MaterialTheme.typography.body1,
-                            textAlign = TextAlign.Center
-                        )
-                    }
-                }
-            }
+       Column(
+           modifier = Modifier.scrollable(
+               state = scrollState,
+               orientation = Orientation.Vertical
+           ).padding(spacing.spaceMedium)
+       ){
+           CreditCard(
+               number = state.creditCard.number,
+               expiration = state.creditCard.expiration,
+               holderName = state.creditCard.holderName,
+               cvc = state.creditCard.cvc,
+               emptyChar = 'X',
+               logoCardIssuer = state.creditCard.logoCardIssuer
+           )
+           Spacer(modifier = Modifier.size(16.dp))
+           CreditCardForm(
+               creditCard = state.creditCard,
+               onFocusChanged = {
+                   viewModel.onEvent(InstallmentEvent.OnFocusChanged(it))
+               },
+               onNumberValueChange = {
+                   viewModel.onEvent(InstallmentEvent.OnNumberValueChange(it))
+               },
+               onNameValueChange = {
+                   viewModel.onEvent(InstallmentEvent.OnNameValueChange(it))
+               },
+               onExpirationValueChange = {
+                   viewModel.onEvent(InstallmentEvent.OnExpirationValueChange(it))
+               },
+               onCVCValueChange = {
+                   viewModel.onEvent(InstallmentEvent.OnCVCValueChange(it))
+               },
+               onSetName = {
+                   viewModel.onEvent(InstallmentEvent.OnNameValueChange(""))
+               },
+               onSetNumber= {
+                   viewModel.onEvent(InstallmentEvent.OnNumberValueChange(""))
+               },
+               onSetExpiration = {
+                   viewModel.onEvent(InstallmentEvent.OnExpirationValueChange(""))
+               },
+               onSetCVC= {
+                   viewModel.onEvent(InstallmentEvent.OnCVCValueChange(""))
+               },
+               items = state.recommendedMessage,
+               mSelectedText = state.selectedInstallment,
+               mTextFieldSize = state.selectedInstallmentMessageSize,
+               mExpanded = state.installmentExpanded,
+               onValueChange = {
+                   viewModel.onEvent(InstallmentEvent.OnValueChangeInstallment(it))
+               },
+               onClick = {
+                   viewModel.onEvent(InstallmentEvent.OnInstallmentClick)
+               },
+               onSelect = {
+                   viewModel.onEvent(InstallmentEvent.OnSelectInstallment(it))
+               },
+               onGloballyPositioned = {
+                   viewModel.onEvent(InstallmentEvent.OnGloballyPositioned(it))
+               },
+               onDismissRequest = {
+                   viewModel.onEvent(InstallmentEvent.OnDismissRequest)
+               },
+               onDropdownMenuFocusChanged = {
+                   viewModel.onEvent(InstallmentEvent.OnDropdownMenuFocusChanged(it))
+               }
+           )
+          }
         }
     }

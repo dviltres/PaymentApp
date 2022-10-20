@@ -1,7 +1,10 @@
 package com.dviltres.paymentapp.di
 
+import android.app.Application
 import android.content.Context
 import com.dviltres.paymentapp.PaymentApp
+import com.dviltres.paymentapp.domain.useCase.payment.PaymentUseCases
+import com.dviltres.paymentapp.presentation.payment.PaymentViewModel
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -16,5 +19,11 @@ object AppModule {
     @Provides
     fun provideApplication(@ApplicationContext app: Context): PaymentApp {
         return app as PaymentApp
+    }
+
+    @Singleton
+    @Provides
+    fun providePaymentViewModel(paymentUseCases: PaymentUseCases, context: Application): PaymentViewModel {
+        return PaymentViewModel(paymentUseCases = paymentUseCases, context = context )
     }
 }

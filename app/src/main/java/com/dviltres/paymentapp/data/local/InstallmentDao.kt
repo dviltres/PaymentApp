@@ -13,8 +13,8 @@ interface InstallmentDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertInstallment(installmentEntity: InstallmentEntity)
 
-    @Query("SELECT * FROM InstallmentEntity Where payment_method_id=:paymentMethodId")
-    suspend fun getInstallments(paymentMethodId: String):InstallmentEntity?
+    @Query("SELECT * FROM InstallmentEntity Where issuerId=:issuerId AND payment_method_id=:paymentMethodId")
+    suspend fun getInstallments(issuerId: String, paymentMethodId: String):InstallmentEntity?
 
     @Query("SELECT * FROM InstallmentEntity Where issuerId=:issuerId")
     suspend fun getInstallmentById(issuerId:String): InstallmentEntity?

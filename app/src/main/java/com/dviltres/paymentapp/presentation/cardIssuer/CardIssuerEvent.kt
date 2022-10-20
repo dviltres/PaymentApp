@@ -2,7 +2,6 @@ package com.dviltres.paymentapp.presentation.cardIssuer
 
 import com.dviltres.paymentapp.domain.model.CardIssuer
 import com.dviltres.paymentapp.presentation.components.SearchState
-import com.dviltres.paymentapp.presentation.paymentMethod.PaymentMethodEvent
 
 sealed class CardIssuerEvent {
     object OnConfirmClick: CardIssuerEvent()

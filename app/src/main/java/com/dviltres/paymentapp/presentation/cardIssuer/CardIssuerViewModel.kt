@@ -33,7 +33,6 @@ class CardIssuerViewModel @Inject constructor(
     init {
         savedStateHandle.get<String>("payment_method_id")?.let { paymentMethodId ->
             getPaymentMethod(paymentMethodId)
-            getCardIssuers(paymentMethodId)
         }
     }
 
@@ -60,12 +59,17 @@ class CardIssuerViewModel @Inject constructor(
             cardIssuerUseCases.getCardIssuers(query = state.query, paymentMethodId = paymentMethodId).collect { result->
                 when(result){
                     is Resource.Success -> {
-                        state = state.copy(
-                            cardIssuers = result.data!!,
-                            isLoading = false
-                        )
+                       result.data?.let {
+                           state = state.copy(
+                               cardIssuers = it,
+                               isLoading = false
+                           )
+                       }
                     }
                     is Resource.Error -> {
+                        state = state.copy(
+                            isLoading = false
+                        )
                         _uiEvent.send(
                             UiEvent.ShowSnackbar(message = UiText.DynamicString(result.message!!))
                         )
@@ -84,12 +88,18 @@ class CardIssuerViewModel @Inject constructor(
             paymentMethodUseCases.getPaymentMethodById(paymentMethodId = paymentMethodId).collect { result->
                 when(result){
                     is Resource.Success -> {
-                        state = state.copy(
-                            paymentMethod = result.data!!,
-                            isLoading = false
-                        )
+                        result.data?.let {
+                            state = state.copy(
+                                paymentMethod = it,
+                                isLoading = false
+                            )
+                        }
+                        getCardIssuers(paymentMethodId)
                     }
                     is Resource.Error -> {
+                        state = state.copy(
+                            isLoading = false
+                        )
                         _uiEvent.send(
                             UiEvent.ShowSnackbar(message = UiText.DynamicString(result.message!!))
                         )

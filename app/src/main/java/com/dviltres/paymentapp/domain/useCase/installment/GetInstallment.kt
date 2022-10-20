@@ -16,16 +16,21 @@ class GetInstallment @Inject constructor(
     private val repository: InstallmentRepository,
     private val application: Application,
 ) {
-    operator fun invoke(amount:Int, paymentMethodId:String, issuerId:String): Flow<Resource<Installment>> = flow {
+    operator fun invoke(amount:String, paymentMethodId:String, issuerId:String): Flow<Resource<Installment>> = flow {
         try {
             emit(Resource.Loading())
             val installment = repository.getInstallment(
-                amount = amount,
+                amount = amount.toDouble(),
                 paymentMethodId = paymentMethodId,
                 issuerId = issuerId
             )
-            if(installment != null)
-                emit(Resource.Success(installment))
+            if(installment != null){
+                if(installment.recommended_message.isEmpty())
+                    emit(Resource.Error(message = UiText.StringResource(R.string.no_exist_installment).asString(application)))
+               else
+                   emit(Resource.Success(installment))
+            }
+
             else
                 emit(Resource.Error(message = UiText.StringResource(R.string.unexpectedError).asString(application)))
 

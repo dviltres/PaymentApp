@@ -1,4 +1,4 @@
-package com.dviltres.paymentapp.presentation.util
+package com.dviltres.paymentapp.domain.useCase.util
 
 /** Parse credit card number, split it on blocks*/
 class CardNumberParser(

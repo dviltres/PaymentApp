@@ -1,17 +1,17 @@
 package com.dviltres.paymentapp.presentation.payment
 
-import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
@@ -31,13 +31,11 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.dviltres.paymentapp.R
-import com.dviltres.paymentapp.data.common.Constants
-import com.dviltres.paymentapp.presentation.components.CustomAppBar
+import com.dviltres.paymentapp.domain.useCase.util.InputValidator
+import com.dviltres.paymentapp.presentation.components.DefaultAppBar
 import com.dviltres.paymentapp.presentation.components.RoundedButton
-import com.dviltres.paymentapp.presentation.components.SearchState
 import com.dviltres.paymentapp.presentation.payment.components.PaymentItem
 import com.dviltres.paymentapp.presentation.theme.LocalSpacing
-import com.dviltres.paymentapp.presentation.theme.Red
 import com.dviltres.paymentapp.presentation.util.navigation.Screen
 import com.dviltres.paymentapp.presentation.util.navigation.StandardScaffold
 import com.dviltres.paymentapp.presentation.util.uiEvent.UiEvent
@@ -61,7 +59,7 @@ fun PaymentScreen(
     val keyboardController = LocalSoftwareKeyboardController.current
 
     val swipeRefreshState = rememberSwipeRefreshState(
-        isRefreshing = viewModel.state.isRefreshing
+        isRefreshing = state.isRefreshing
     )
 
     LaunchedEffect(key1 = state.expanded) {
@@ -72,7 +70,7 @@ fun PaymentScreen(
         viewModel.uiEvent.collect { event ->
             when (event) {
                 is UiEvent.Success -> {
-
+                    navController.navigate(Screen.PaymentMethodScreen.route+"?amount=${event.data as String}")
                 }
                 is UiEvent.ShowSnackbar -> {
                     scaffoldState.snackbarHostState.showSnackbar(
@@ -102,7 +100,7 @@ fun PaymentScreen(
                                 end = spacing.spaceMedium)
                     )
                     IconButton( onClick = {
-                        viewModel.onEvent(PaymentEvent.OnCloseAddPaymentView)
+                        viewModel.onEvent(PaymentEvent.OnCloseAddAmountView)
                         keyboardController?.hide()
                     }) {
                         Icon(Icons.Filled.Close, contentDescription = stringResource(
@@ -121,18 +119,21 @@ fun PaymentScreen(
                         modifier = Modifier.fillMaxWidth(),
                         value = state.amount,
                         onValueChange = {
-                            viewModel.onEvent(PaymentEvent.OnPaymentChange(it))
+                            InputValidator.parseAmount(it)?.let { amount ->
+                                viewModel.onEvent(PaymentEvent.OnAmountChange(amount))
+                            }
                         },
                         label = { Text(text = stringResource(id = R.string.amount)) },
                         singleLine = true,
                         keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.Text,
+                            keyboardType = KeyboardType.Number,
                             imeAction = ImeAction.Done
                         ),
                         keyboardActions = KeyboardActions(
                             onDone = {
                                 focusManager.clearFocus()
                                 keyboardController?.hide()
+                                viewModel.onEvent(PaymentEvent.OnConfirmClick)
                             }
                         )
                     )
@@ -142,7 +143,7 @@ fun PaymentScreen(
                         isEnabled = state.amount.isNotBlank(),
                         displayProgressBar = state.isLoading,
                         onClick = {
-                            navController.navigate(Screen.PaymentMethodScreen.route+"?amount=${state.amount.toInt()}")
+                            viewModel.onEvent(PaymentEvent.OnConfirmClick)
                         },
                         modifier = Modifier.fillMaxWidth()
                     )
@@ -159,37 +160,14 @@ fun PaymentScreen(
             modifier = Modifier,
             drawerGesturesEnabled = false,
             topBar = {
-                CustomAppBar(
-                    title = stringResource(R.string.payments),
-                    searchState = state.searchState,
-                    searchTextState = state.query,
-                    onTextChange = {
-                        viewModel.onEvent(PaymentEvent.OnUpdateSearchText(it))
-                    },
-                    onCloseClicked = {
-                        viewModel.onEvent(PaymentEvent.OnUpdateSearchState(SearchState.CLOSED))
-                    },
-                    onSearchClicked = {
-                        Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
-                    },
-                    actions = {
-                        IconButton(
-                            onClick = {
-                                viewModel.onEvent(PaymentEvent.OnUpdateSearchState(SearchState.OPENED))
-                            }){
-                            Icon(
-                                Icons.Filled.Search,
-                                contentDescription = stringResource(R.string.search_icon),
-                                tint = Color.White
-                            )
-                        }
-                    }
+                DefaultAppBar(
+                    title = stringResource(R.string.payment)
                 )
             },
             floatingActionButton = {
                 FloatingActionButton(
                     onClick = {
-                        viewModel.onEvent(PaymentEvent.OnAddPaymentClick)
+                        viewModel.onEvent(PaymentEvent.OnAddAmountClick)
                     },
                     backgroundColor = MaterialTheme.colors.primary,
                     contentColor = Color.White,
@@ -202,7 +180,6 @@ fun PaymentScreen(
                     )
                 }
             },
-
             bottomBar = {
 
             }
@@ -219,18 +196,10 @@ fun PaymentScreen(
                     LazyColumn(
                         modifier = Modifier
                             .fillMaxSize()
-                            .padding(top = spacing.spaceMedium)
-                            .background(MaterialTheme.colors.background),
-                        contentPadding = PaddingValues(top = 100.dp),
+                            .padding(spacing.spaceSmall),
                         state = scrollState
                     ) {
-                        itemsIndexed(
-                            items = state.payments
-                        ) { index, item ->
-                            viewModel.onEvent(PaymentEvent.OnChangeScrollPosition(index))
-                            if ((index + 1) >= (state.page * Constants.PAGE_SIZE) && !state.isLoading) {
-                                viewModel.onEvent(PaymentEvent.OnTriggerNextPage)
-                            }
+                        items(state.payments){ item->
                             PaymentItem(
                                 item = item,
                                 onSelectedClick = {

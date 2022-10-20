@@ -35,6 +35,7 @@ fun RoundedButton(
             ) {
                 Text(
                     text = text,
+                    maxLines = 1,
                     style = MaterialTheme.typography.h6.copy(
                         color = Color.White
                     )

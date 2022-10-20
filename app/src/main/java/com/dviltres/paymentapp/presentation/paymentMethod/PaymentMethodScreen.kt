@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -14,9 +16,11 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -24,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.dviltres.paymentapp.R
+import com.dviltres.paymentapp.data.common.Constants
 import com.dviltres.paymentapp.presentation.components.BottomBarButton
 import com.dviltres.paymentapp.presentation.components.CustomAppBar
 import com.dviltres.paymentapp.presentation.components.SearchState
@@ -37,10 +42,10 @@ import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 
 
-@OptIn(ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterialApi::class, ExperimentalComposeUiApi::class)
 @Composable
 fun PaymentMethodScreen(
-    amount:Int,
+    amount:String,
     navController: NavController,
     viewModel: PaymentMethodViewModel = hiltViewModel()
 ) {
@@ -48,10 +53,13 @@ fun PaymentMethodScreen(
     val context = LocalContext.current
     val scaffoldState = rememberScaffoldState()
     val spacing = LocalSpacing.current
+    val scrollState = rememberLazyListState()
     val swipeRefreshState = rememberSwipeRefreshState(
         isRefreshing = viewModel.state.isRefreshing
     )
+    val keyboardController = LocalSoftwareKeyboardController.current
     val sheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
+
     LaunchedEffect(key1 = state.expanded) {
         if (state.expanded)
             sheetState.show()
@@ -75,16 +83,20 @@ fun PaymentMethodScreen(
             }
         }
     }
+    viewModel.onEvent(PaymentMethodEvent.OnUpdateScrollPosition(scrollState.firstVisibleItemIndex))
 
     ModalBottomSheetLayout(
         sheetContent = {
             Text(
-                text = stringResource(id = R.string.amount_to_pay, amount.toString()),
+                text = stringResource(id = R.string.amount_to_pay, amount),
                 style = MaterialTheme.typography.body1,
                 textAlign = TextAlign.Center,
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.fillMaxWidth().padding(top = spacing.spaceMedium)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = spacing.spaceMedium)
             )
+            Spacer(modifier = Modifier.height(spacing.spaceSmall))
             if(state.selectedPaymentMethod != null){
                 BottomBarButton(
                     text = state.selectedPaymentMethod.name,
@@ -126,7 +138,7 @@ fun PaymentMethodScreen(
                         viewModel.onEvent(PaymentMethodEvent.OnUpdateSearchState(SearchState.CLOSED))
                     },
                     onSearchClicked = {
-                        Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+                        viewModel.onEvent(PaymentMethodEvent.OnSearchClicked(it))
                     },
                     navigationIcon = {
                         IconButton(onClick = {
@@ -166,11 +178,18 @@ fun PaymentMethodScreen(
                         .fillMaxSize()
                         .background(MaterialTheme.colors.surface)
                 ){
-                    items(state.paymentMethods){ item->
+                    itemsIndexed(
+                        items = state.paymentMethods
+                    ) { index, item ->
+                        viewModel.onEvent(PaymentMethodEvent.OnChangeScrollPosition(index))
+                        if ((index + 1) >= (state.page * Constants.PAGE_SIZE) && !state.isLoading) {
+                            viewModel.onEvent(PaymentMethodEvent.OnTriggerNextPage)
+                        }
                         PaymentMethodItem(
                             item = item,
                             background = MaterialTheme.colors.background,
                             onSelectedClick = {
+                                keyboardController?.hide()
                                 viewModel.onEvent(PaymentMethodEvent.OnSelectPaymentMethod(item))
                             }
                         )

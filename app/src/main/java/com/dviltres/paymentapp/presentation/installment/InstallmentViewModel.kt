@@ -18,12 +18,14 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 import com.dviltres.paymentapp.R
 import com.dviltres.paymentapp.domain.useCase.cardIssuer.CardIssuerUseCases
+import com.dviltres.paymentapp.domain.useCase.payment.PaymentUseCases
 
 @HiltViewModel
 class InstallmentViewModel @Inject constructor(
     private val installmentUseCases: InstallmentUseCases,
     private val paymentMethodUseCases:PaymentMethodUseCases,
     private val cardIssuerUseCases: CardIssuerUseCases,
+    private val paymentUseCases: PaymentUseCases,
     savedStateHandle: SavedStateHandle
 ): ViewModel() {
 
@@ -34,26 +36,35 @@ class InstallmentViewModel @Inject constructor(
     val uiEvent = _uiEvent.receiveAsFlow()
 
     init {
-        savedStateHandle.get<String>("payment_method_id")?.let { paymentMethodId ->
-            state = state.copy(
-                paymentMethodId = paymentMethodId
-            )
-            getPaymentMethod(paymentMethodId)
+        viewModelScope.launch {
+            savedStateHandle.get<String>("payment_method_id")?.let { paymentMethodId ->
+                state = state.copy(
+                    paymentMethodId = paymentMethodId
+                )
+                getPaymentMethod(paymentMethodId)
+            }
+            savedStateHandle.get<String>("issuer_id")?.let { issuer_id ->
+                state = state.copy(
+                    issuerId = issuer_id
+                )
+                getCardIssuers(issuer_id)
+            }
+            savedStateHandle.get<String>("amount")?.let { amount ->
+                state = state.copy(
+                    amount = amount
+                )
+            }
         }
-        savedStateHandle.get<String>("issuer_id")?.let { issuer_id ->
-            state = state.copy(
-                issuerId = issuer_id
+        if(state.paymentMethodId != null && state.issuerId != null && state.amount != null){
+            var updatedPayment by mutableStateOf(state.payment)
+            updatedPayment = updatedPayment.copy(
+                amount = state.amount.toDouble()
             )
-            getCardIssuers(issuer_id)
-        }
-        savedStateHandle.get<Int>("amount")?.let { amount ->
             state = state.copy(
-                amount = amount
+                payment = updatedPayment
             )
-        }
-
-        if(state.paymentMethodId != null && state.issuerId != null && state.amount != null)
             getInstallments()
+        }
         else
             viewModelScope.launch {
                 _uiEvent.send(
@@ -64,14 +75,91 @@ class InstallmentViewModel @Inject constructor(
 
     fun onEvent(event: InstallmentEvent) {
         when(event) {
-            InstallmentEvent.OnConfirmClick -> {}
-            InstallmentEvent.OnRefresh -> {}
+            InstallmentEvent.OnPaymentConfirmClick -> {
+                paymentConfirm()
+            }
             is InstallmentEvent.OnSelectInstallment -> {
+                var updatePayment by mutableStateOf(state.payment)
+                updatePayment = updatePayment.copy(
+                    installment = event.installment
+                )
                 state = state.copy(
-                    selectedInstallment = event.installment
+                    selectedInstallment = event.installment,
+                    payment = updatePayment
                 )
             }
-            is InstallmentEvent.OnShowErrorMessage -> TODO()
+            is InstallmentEvent.OnShowErrorMessage -> {
+
+            }
+            InstallmentEvent.OnDismissRequest -> {
+                state = state.copy(
+                    installmentExpanded = false
+                )
+            }
+            is InstallmentEvent.OnGloballyPositioned -> {
+                state = state.copy(
+                    selectedInstallmentMessageSize = event.size
+                )
+            }
+            InstallmentEvent.OnInstallmentClick -> {
+                state = state.copy(
+                    installmentExpanded = !state.installmentExpanded
+                )
+            }
+            is InstallmentEvent.OnValueChangeInstallment -> {
+                var updatePayment by mutableStateOf(state.payment)
+                updatePayment = updatePayment.copy(
+                   installment = event.installment
+                )
+                state = state.copy(
+                    selectedInstallment = event.installment,
+                    payment = updatePayment
+                )
+            }
+            is InstallmentEvent.OnCVCValueChange -> {
+                var updateCreditCard by mutableStateOf(state.creditCard)
+                updateCreditCard = updateCreditCard.copy(
+                    cvc = event.value
+                )
+                state = state.copy(creditCard = updateCreditCard)
+            }
+            is InstallmentEvent.OnDropdownMenuFocusChanged -> {
+
+            }
+            is InstallmentEvent.OnExpirationValueChange -> {
+                val expiration = if (event.value.length >= 4)
+                    event.value.substring(0..3)
+                else
+                    event.value
+
+                var updateCreditCard by mutableStateOf(state.creditCard)
+                updateCreditCard = updateCreditCard.copy(
+                    expiration = expiration
+                )
+                state = state.copy(creditCard = updateCreditCard)
+            }
+            is InstallmentEvent.OnFocusChanged -> {
+
+            }
+            is InstallmentEvent.OnNameValueChange -> {
+                var updateCreditCard by mutableStateOf(state.creditCard)
+                updateCreditCard = updateCreditCard.copy(
+                    holderName = event.value
+                )
+                state = state.copy(creditCard = updateCreditCard)
+            }
+            is InstallmentEvent.OnNumberValueChange -> {
+                val number = if (event.value.length >= 16)
+                    event.value.substring(0..15)
+                else
+                    event.value
+
+                var updateCreditCard by mutableStateOf(state.creditCard)
+                updateCreditCard = updateCreditCard.copy(
+                    number = number
+                )
+                state = state.copy(creditCard = updateCreditCard)
+            }
         }
     }
 
@@ -85,13 +173,18 @@ class InstallmentViewModel @Inject constructor(
             ).collect { result->
                 when(result){
                     is Resource.Success -> {
-                        state = state.copy(
-                            installment = result.data!!,
-                            recommendedMessage = result.data.recommended_message,
-                            isLoading = false
-                        )
+                        result.data?.let {
+                            state = state.copy(
+                                installment = it,
+                                recommendedMessage = it.recommended_message,
+                                isLoading = false
+                            )
+                        }
                     }
                     is Resource.Error -> {
+                        state = state.copy(
+                            isLoading = false
+                        )
                         _uiEvent.send(
                             UiEvent.ShowSnackbar(message = UiText.DynamicString(result.message!!))
                         )
@@ -110,12 +203,21 @@ class InstallmentViewModel @Inject constructor(
             paymentMethodUseCases.getPaymentMethodById(paymentMethodId = paymentMethodId).collect { result->
                 when(result){
                     is Resource.Success -> {
-                        state = state.copy(
-                            paymentMethod = result.data!!,
-                            isLoading = false
-                        )
+                        result.data?.let {
+                            var updatedPayment by mutableStateOf(state.payment)
+                            updatedPayment = updatedPayment.copy(
+                                paymentMethod = it
+                            )
+                            state = state.copy(
+                                isLoading = false,
+                                payment = updatedPayment
+                            )
+                        }
                     }
                     is Resource.Error -> {
+                        state = state.copy(
+                            isLoading = false
+                        )
                         _uiEvent.send(
                             UiEvent.ShowSnackbar(message = UiText.DynamicString(result.message!!))
                         )
@@ -133,12 +235,26 @@ class InstallmentViewModel @Inject constructor(
             cardIssuerUseCases.getCardIssuerById(cardIssuerId).collect { result->
                 when(result){
                     is Resource.Success -> {
-                        state = state.copy(
-                            cardIssuer = result.data!!,
-                            isLoading = false
-                        )
+                        result.data?.let {
+                            var updatedPayment by mutableStateOf(state.payment)
+                            var updatedCreditCard by mutableStateOf(state.creditCard)
+                            updatedPayment = updatedPayment.copy(
+                                cardIssuer = it
+                            )
+                            updatedCreditCard = updatedCreditCard.copy(
+                                logoCardIssuer = it.thumbnail
+                            )
+                            state = state.copy(
+                                payment = updatedPayment,
+                                creditCard = updatedCreditCard,
+                                isLoading = false
+                            )
+                        }
                     }
                     is Resource.Error -> {
+                        state = state.copy(
+                            isLoading = false
+                        )
                         _uiEvent.send(
                             UiEvent.ShowSnackbar(message = UiText.DynamicString(result.message!!))
                         )
@@ -149,5 +265,38 @@ class InstallmentViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    private fun paymentConfirm(){
+            viewModelScope.launch {
+                paymentUseCases.paymentConfirm(
+                    card = state.creditCard,
+                    payment = state.payment
+                ).collect { result->
+                    when(result){
+                        is Resource.Success -> {
+                            result.data?.let {
+                                state = state.copy(
+                                    payment = it,
+                                    isLoading = false
+                                )
+                                _uiEvent.send(UiEvent.Success())
+                            }
+                        }
+                        is Resource.Error -> {
+                            state = state.copy(
+                                isLoading = false
+                            )
+                            _uiEvent.send(
+                                UiEvent.ShowSnackbar(message = UiText.DynamicString(result.message!!))
+                            )
+                        }
+                        is Resource.Loading -> {
+                            state = state.copy(isLoading = true)
+                        }
+                    }
+                }
+            }
+
     }
 }

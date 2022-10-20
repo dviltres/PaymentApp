@@ -1,7 +1,6 @@
 package com.dviltres.paymentapp.presentation.util.navigation
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.material.ScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -12,7 +11,6 @@ import com.dviltres.paymentapp.presentation.cardIssuer.CardIssuerScreen
 import com.dviltres.paymentapp.presentation.installment.InstallmentScreen
 import com.dviltres.paymentapp.presentation.payment.PaymentScreen
 import com.dviltres.paymentapp.presentation.paymentMethod.PaymentMethodScreen
-import com.dviltres.paymentapp.presentation.util.navigation.Screen
 
 @Composable
 fun NavigationHost(
@@ -29,15 +27,12 @@ fun NavigationHost(
         composable(Screen.PaymentMethodScreen.route+"?amount={amount}",
             arguments = listOf(
                 navArgument("amount") {
-                    type = NavType.IntType
-                    defaultValue = 0
+                    type = NavType.StringType
+                    defaultValue = ""
                 }
             )
         ) {
-            BackHandler(true) {
-                navController.navigate(Screen.PaymentScreen.route)
-            }
-            val amount = it.arguments?.getInt("amount",0)?:0
+            val amount = it.arguments?.getString("amount","")?:""
             PaymentMethodScreen(
                 navController = navController,
                 amount = amount
@@ -50,16 +45,13 @@ fun NavigationHost(
                     defaultValue = ""
                 },
                 navArgument("amount") {
-                    type = NavType.IntType
-                    defaultValue = 0
+                    type = NavType.StringType
+                    defaultValue = ""
                 }
             )
         ) {
-            BackHandler(true) {
-
-            }
             val paymentMethodId = it.arguments?.getString("payment_method_id","")?:""
-            val amount = it.arguments?.getInt("amount",0)?:0
+            val amount = it.arguments?.getString("amount","")?:""
             CardIssuerScreen(
                 navController = navController,
                 paymentMethodId = paymentMethodId,
@@ -73,8 +65,8 @@ fun NavigationHost(
                     defaultValue = ""
                 },
                 navArgument("amount") {
-                    type = NavType.IntType
-                    defaultValue = 0
+                    type = NavType.StringType
+                    defaultValue = ""
                 },
                 navArgument("issuer_id") {
                     type = NavType.StringType
@@ -82,11 +74,8 @@ fun NavigationHost(
                 }
             )
         ) {
-            BackHandler(true) {
-
-            }
             val paymentMethodId = it.arguments?.getString("payment_method_id","")?:""
-            val amount = it.arguments?.getInt("amount",0)?:0
+            val amount = it.arguments?.getString("amount","")?:""
             val issuerId =  it.arguments?.getString("issuer_id","")?:""
             InstallmentScreen(
                 navController = navController,

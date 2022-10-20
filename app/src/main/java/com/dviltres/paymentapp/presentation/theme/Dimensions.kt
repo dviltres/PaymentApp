@@ -6,6 +6,7 @@ import androidx.compose.ui.unit.dp
 
 data class Dimensions(
     val default: Dp = 0.dp,
+    val spaceTwo: Dp = 2.dp,
     val spaceExtraSmall: Dp = 4.dp,
     val spaceFive: Dp = 5.dp,
     val spaceSmall: Dp = 8.dp,

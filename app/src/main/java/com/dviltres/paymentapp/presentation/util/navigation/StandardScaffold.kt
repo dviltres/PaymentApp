@@ -21,7 +21,6 @@ fun StandardScaffold(
     drawerGesturesEnabled:Boolean=true,
     content: @Composable () -> Unit,
 ) {
-    val scope = rememberCoroutineScope()
 
     Scaffold(
         scaffoldState = scaffoldState,

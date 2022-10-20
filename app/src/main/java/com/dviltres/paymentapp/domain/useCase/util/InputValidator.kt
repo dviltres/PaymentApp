@@ -1,7 +1,6 @@
-package com.dviltres.paymentapp.presentation.util
+package com.dviltres.paymentapp.domain.useCase.util
 
 class InputValidator {
-
     companion object {
         fun parseNumber(number: String): String? = when {
             checkNumber(number) -> number
@@ -21,6 +20,12 @@ class InputValidator {
             else -> null
         }
 
+        fun parseAmount(amount: String): String? = when {
+            checkAmount(amount) -> amount
+            amount.isEmpty() -> ""
+            else -> null
+        }
+
         private fun checkNumber(number: String): Boolean =
             number.isNotEmpty() && number.length <= 16 && number.last().isDigit()
 
@@ -29,5 +34,14 @@ class InputValidator {
 
         private fun checkCVC(cvc: String): Boolean =
             cvc.isNotEmpty() && cvc.last().isDigit() && cvc.length <= 3
+
+        private fun checkAmount(number: String): Boolean {
+            var result = false
+            number.toDoubleOrNull()?.let {
+                result = true
+            }
+            return result
+        }
+
     }
 }

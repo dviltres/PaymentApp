@@ -9,14 +9,15 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.focus.onFocusEvent
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
+import com.dviltres.paymentapp.R
 import com.dviltres.paymentapp.domain.model.CreditCard
-import com.dviltres.paymentapp.presentation.util.FieldType
-import com.dviltres.paymentapp.presentation.util.InputValidator
+import com.dviltres.paymentapp.domain.useCase.util.InputValidator
 
 @Composable
 fun CreditCardForm(
-    flipped:Boolean,
     creditCard: CreditCard,
     onFocusChanged:(Boolean) -> Unit,
     onNumberValueChange:(String) -> Unit,
@@ -27,49 +28,54 @@ fun CreditCardForm(
     onSetNumber:() -> Unit,
     onSetExpiration:() -> Unit,
     onSetCVC:() -> Unit,
+    items:List<String>,
+    mSelectedText:String,
+    mTextFieldSize: Size,
+    mExpanded:Boolean,
+    onValueChange:(String) -> Unit,
+    onClick:() -> Unit,
+    onSelect:(String) -> Unit,
+    onGloballyPositioned:(Size) -> Unit,
+    onDismissRequest:() -> Unit,
+    onDropdownMenuFocusChanged:(Boolean) -> Unit,
 ) {
     val focusHolderName = FocusRequester()
     val focusExpiration = FocusRequester()
     val focusCVC = FocusRequester()
+    val focusInstallment = FocusRequester()
 
     Column {
         CustomTextField(
             modifier = Modifier
                 .fillMaxWidth()
                 .onFocusChanged { state ->
-                    //if (state.isFocused) flipped = false
                     onFocusChanged(state.isFocused)
                 },
             value = creditCard.number,
-            label = "Number of card",
-            // visualTransformation = InputTransformation(FieldType.CARD_NUMBER),
+            label = stringResource(id = R.string.number_card),
             onValueChange = {
-                onNumberValueChange(it)
-                   /* if (number.length >= 16) number.substring(0..15) else it*/
-
-                // When value is completed, request focus of next field
-                if (creditCard.number.length >= 16) focusHolderName.requestFocus()
+                InputValidator.parseNumber(it)?.let { number ->
+                    onNumberValueChange(number)
+                    if (creditCard.number.length >= 16) focusHolderName.requestFocus()
+                }
             },
             trailingIcon = {
                 CustomTextFieldDeleteIcon(value = creditCard.number) {
-                    //viewModel.number = ""
                     onSetNumber()
                 }
             },
             keyboardType = KeyboardType.Number,
             nextFocus = focusHolderName
         )
-
         CustomTextField(
             modifier = Modifier
                 .fillMaxWidth()
                 .onFocusChanged { state ->
-                    //if (state.isFocused) viewModel.flipped = false
                     onFocusChanged(state.isFocused)
                 }
                 .focusRequester(focusHolderName),
             value = creditCard.holderName,
-            label = "Name of card",
+            label = stringResource(id = R.string.holder_name),
             onValueChange = {
                 InputValidator.parseHolderName(it)?.let { name ->
                     onNameValueChange(name)
@@ -89,18 +95,12 @@ fun CreditCardForm(
                     .weight(0.5f)
                     .onFocusEvent { state ->
                         onFocusChanged(state.isFocused)
-                       /* if (state.isFocused) viewModel.flipped = false*/
                     }
                     .focusRequester(focusExpiration),
                 value = creditCard.expiration,
-                label = "Expiration",
-             //   visualTransformation = InputTransformation(FieldType.EXPIRATION),
+                label = stringResource(id = R.string.expiration),
                 onValueChange = { expiration->
-                   // viewModel.expiration = if (it.length >= 4) it.substring(0..3) else it
-
                     onExpirationValueChange(expiration)
-
-                    // When value is completed, request focus of next field
                     if (creditCard.expiration.length >= 4) focusCVC.requestFocus()
                 },
                 trailingIcon = {
@@ -120,10 +120,11 @@ fun CreditCardForm(
                     }
                     .focusRequester(focusCVC),
                 value = creditCard.cvc,
-                label = "CVC",
+                label = stringResource(id = R.string.cvc),
                 onValueChange = {
                     InputValidator.parseCVC(it)?.let { cvc ->
                         onCVCValueChange(cvc)
+                        if (cvc.length >= 3) focusInstallment.requestFocus()
                     }
                 },
                 trailingIcon = {
@@ -131,8 +132,22 @@ fun CreditCardForm(
                         onSetCVC()
                     }
                 },
-                keyboardType = KeyboardType.Number
+                keyboardType = KeyboardType.Number,
+                nextFocus = focusInstallment
             )
         }
+        DropdownMenu(
+            items = items,
+            mSelectedText = mSelectedText,
+            mTextFieldSize = mTextFieldSize,
+            mExpanded = mExpanded,
+            onValueChange = onValueChange,
+            onClick = onClick,
+            onSelect = onSelect,
+            onGloballyPositioned = onGloballyPositioned,
+            onDismissRequest = onDismissRequest,
+            onFocusChanged = onDropdownMenuFocusChanged,
+            focusRequester = focusInstallment,
+        )
     }
 }

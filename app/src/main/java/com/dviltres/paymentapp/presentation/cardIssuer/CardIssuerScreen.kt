@@ -1,6 +1,5 @@
 package com.dviltres.paymentapp.presentation.cardIssuer
 
-import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -11,7 +10,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
@@ -28,10 +26,7 @@ import androidx.navigation.NavController
 import com.dviltres.paymentapp.R
 import com.dviltres.paymentapp.presentation.cardIssuer.components.CardIssuerItem
 import com.dviltres.paymentapp.presentation.components.BottomBarButton
-import com.dviltres.paymentapp.presentation.components.CustomAppBar
 import com.dviltres.paymentapp.presentation.components.DefaultAppBar
-import com.dviltres.paymentapp.presentation.components.SearchState
-import com.dviltres.paymentapp.presentation.paymentMethod.PaymentMethodEvent
 import com.dviltres.paymentapp.presentation.paymentMethod.components.PaymentMethodItem
 import com.dviltres.paymentapp.presentation.theme.LocalSpacing
 import com.dviltres.paymentapp.presentation.util.navigation.Screen
@@ -46,7 +41,7 @@ import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 @Composable
 fun CardIssuerScreen(
     paymentMethodId:String,
-    amount:Int,
+    amount:String,
     navController: NavController,
     viewModel: CardIssuerViewModel = hiltViewModel()
 ) {

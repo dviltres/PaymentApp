@@ -1,9 +1,7 @@
 package com.dviltres.paymentapp.presentation.installment
 
-import com.dviltres.paymentapp.domain.model.CardIssuer
-import com.dviltres.paymentapp.domain.model.CreditCard
-import com.dviltres.paymentapp.domain.model.Installment
-import com.dviltres.paymentapp.domain.model.PaymentMethod
+import androidx.compose.ui.geometry.Size
+import com.dviltres.paymentapp.domain.model.*
 import com.dviltres.paymentapp.presentation.components.SearchState
 
 data class InstallmentState(
@@ -14,12 +12,12 @@ data class InstallmentState(
     val isRefreshing: Boolean = false,
     val searchState: SearchState = SearchState.CLOSED,
     val selectedInstallment: String = "",
-    val paymentMethod: PaymentMethod? = null,
-    val cardIssuer:CardIssuer? = null,
-    val amount:Int? = null,
+    val amount:String = "",
     val paymentMethodId:String? = null,
     val issuerId:String? = null,
     val token:String="",
     val creditCard: CreditCard = CreditCard(),
-    val flipped:Boolean = false
+    val payment:Payment = Payment(),
+    val selectedInstallmentMessageSize: Size = Size.Zero,
+    val installmentExpanded:Boolean = false,
 )

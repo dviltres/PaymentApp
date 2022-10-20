@@ -57,7 +57,7 @@ fun PaymentMethodItem (
             .clickable {
                 onSelectedClick()
             }
-            .height(100.dp),
+            .height(120.dp),
         elevation = spacing.spaceTen,
         shape = RoundedCornerShape(spacing.spaceTen)
     )

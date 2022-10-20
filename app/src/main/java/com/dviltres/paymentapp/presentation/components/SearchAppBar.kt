@@ -52,7 +52,9 @@ fun SearchAppBar(
             singleLine = true,
             leadingIcon = {
                 IconButton(
-                    onClick = { },
+                    onClick = {
+                        onSearchClicked(text)
+                    },
                     modifier = Modifier.alpha(ContentAlpha.medium)
                 ) {
                     Icon(
