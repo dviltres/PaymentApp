@@ -20,10 +20,4 @@ object AppModule {
     fun provideApplication(@ApplicationContext app: Context): PaymentApp {
         return app as PaymentApp
     }
-
-    @Singleton
-    @Provides
-    fun providePaymentViewModel(paymentUseCases: PaymentUseCases, context: Application): PaymentViewModel {
-        return PaymentViewModel(paymentUseCases = paymentUseCases, context = context )
-    }
 }

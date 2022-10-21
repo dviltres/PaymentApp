@@ -5,9 +5,9 @@ import android.widget.Toast
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.dviltres.paymentapp.R
 import com.dviltres.paymentapp.data.common.Resource
 import com.dviltres.paymentapp.domain.useCase.payment.PaymentUseCases
 import com.dviltres.paymentapp.presentation.util.uiEvent.UiEvent
@@ -17,7 +17,6 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import com.dviltres.paymentapp.R
 
 @HiltViewModel
 class PaymentViewModel @Inject constructor(
@@ -64,6 +63,9 @@ class PaymentViewModel @Inject constructor(
     private fun goToPaymentMethodScreen(){
         viewModelScope.launch {
            if(state.amount.toDouble() > 0){
+               state = state.copy(
+                   expanded = false
+               )
                _uiEvent.send(UiEvent.Success(state.amount))
             }
             else
@@ -76,12 +78,10 @@ class PaymentViewModel @Inject constructor(
             paymentUseCases.getPayments().collect { result->
                 when(result){
                     is Resource.Success -> {
-                       result.data?.let {
-                           state = state.copy(
-                               payments = it,
-                               isLoading = false
-                           )
-                       }
+                        state = state.copy(
+                            payments = result.data!!,
+                            isLoading = false
+                        )
                     }
                     is Resource.Error -> {
                         state = state.copy(

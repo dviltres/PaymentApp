@@ -21,15 +21,10 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
-    @Inject
-    lateinit var viewModel: PaymentViewModel
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         installSplashScreen().apply {
-            setKeepVisibleCondition {
-                viewModel.state.isLoading
-            }
+
         }
         setContent {
             PaymentAppTheme {
@@ -43,7 +38,6 @@ class MainActivity : ComponentActivity() {
 
                     StandardScaffold(
                         scaffoldState = scaffoldState,
-                        drawerGesturesEnabled = false,
                         modifier = Modifier.fillMaxSize(),
                     ) {
                         NavigationHost(

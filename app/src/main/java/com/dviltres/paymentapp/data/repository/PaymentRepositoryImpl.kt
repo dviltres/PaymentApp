@@ -21,7 +21,7 @@ class PaymentRepositoryImpl(
     override suspend fun getPayments(): List<Payment> {
         var result = mutableListOf<Payment>()
 
-         paymentDao.getPaymentsByDate().onEach { payment ->
+        paymentDao.getPaymentsByDate().onEach { payment ->
              var paymentMethod = getPaymentMethodById(payment.paymentMethodId)
              var cardIssuer = getCardIssuerById(payment.cardIssuerId)
 
